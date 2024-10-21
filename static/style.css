@@ -1,0 +1,36 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+}
+
+h1 {
+    font-size: 2.5rem;
+    color: #343a40;
+}
+
+h2 {
+    font-size: 1.8rem;
+    color: #495057;
+}
+
+.navbar {
+    padding: 1rem;
+}
+
+.form-label {
+    font-weight: bold;
+    color: #495057;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+canvas {
+    margin-top: 20px;
+}

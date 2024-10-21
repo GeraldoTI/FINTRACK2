@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Cost Calculator</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Modern Header Style */
+        .header {
+            background-color: #333;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin: 0;
+            padding: 20px 0;
+            font-size: 32px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-container {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+        }
+
+        .input-section {
+            flex: 1;
+            min-width: 280px;
+            margin: 10px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        h3 {
+            text-align: center;
+            color: #2c3e50;
+        }
+
+        .total-cost {
+            font-size: 24px;
+            font-weight: bold;
+            color: #e74c3c;
+            text-align: center;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        @media (max-width: 800px) {
+            .input-section {
+                flex: 1 1 100%; /* Allow each section to take full width on smaller screens */
+            }
+        }
+
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        const costs = {
+            ec2: [],
+            rds: [],
+            storage: [],
+            vpc: [],
+            lambda: [],
+            s3: []
+        };
+
+        let budget = 0;
+
+        function addCost(service) {
+            const costInput = parseFloat(document.getElementById(`${service}Cost`).value) || 0;
+            if (costInput > 0) {
+                costs[service].push(costInput);
+                updateTotalCost(service);
+                document.getElementById(`${service}Cost`).value = ''; // Clear input
+            }
+        }
+
+        function setBudget() {
+            budget = parseFloat(document.getElementById('budgetInput').value) || 0;
+            document.getElementById('budgetDisplay').innerText = budget.toFixed(2);
+        }
+
+        function updateTotalCost(service) {
+            const totalCost = costs[service].reduce((acc, cost) => acc + cost, 0);
+            document.getElementById(`${service}TotalCost`).innerText = totalCost.toFixed(2);
+        }
+
+        async function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF();
+            pdf.setFontSize(16);
+            pdf.text('Cloud Cost Calculator Report', 20, 20);
+            pdf.setFontSize(12);
+            pdf.text(`Budget: $${budget.toFixed(2)}`, 20, 30);
+            pdf.text('Costs:', 20, 40);
+            pdf.text(`EC2 Total Cost: $${costs.ec2.reduce((acc, cost) => acc + cost, 0).toFixed(2)}`, 20, 50);
+            pdf.text(`RDS Total Cost: $${costs.rds.reduce((acc, cost) => acc + cost, 0).toFixed(2)}`, 20, 60);
+            pdf.text(`Storage Total Cost: $${costs.storage.reduce((acc, cost) => acc + cost, 0).toFixed(2)}`, 20, 70);
+            pdf.text(`VPC Total Cost: $${costs.vpc.reduce((acc, cost) => acc + cost, 0).toFixed(2)}`, 20, 80);
+            pdf.text(`Lambda Total Cost: $${costs.lambda.reduce((acc, cost) => acc + cost, 0).toFixed(2)}`, 20, 90);
+            pdf.text(`S3 Total Cost: $${costs.s3.reduce((acc, cost) => acc + cost, 0).toFixed(2)}`, 20, 100);
+            const totalSpent = Object.keys(costs).reduce((total, service) => total + costs[service].reduce((acc, cost) => acc + cost, 0), 0);
+            pdf.text(`Total Spent: $${totalSpent.toFixed(2)}`, 20, 110);
+            pdf.save('cloud_cost_calculator_report.pdf');
+        }
+    </script>
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        Cloud Project Cost Management
+    </div>
+
+    <div class="container">
+        <h1>Cloud Cost Calculator</h1>
+
+        <div class="input-container">
+            <!-- Budget Section -->
+            <div class="input-section">
+                <h3>Set Budget</h3>
+                <label for="budgetInput">Budget Amount:</label>
+                <input type="number" id="budgetInput" step="0.01" placeholder="Enter your budget" onchange="setBudget()">
+                <h3>Budget: $<span id="budgetDisplay">0.00</span></h3>
+            </div>
+
+            <!-- EC2 Section -->
+            <div class="input-section">
+                <h3>EC2 Cost Control</h3>
+                <label for="ec2Cost">Enter EC2 Cost:</label>
+                <input type="number" id="ec2Cost" step="0.01" placeholder="Enter EC2 cost">
+                <button onclick="addCost('ec2')">Add EC2 Cost</button>
+                <h3>Total Cost: $<span id="ec2TotalCost">0.00</span></h3>
+            </div>
+
+            <!-- RDS Section -->
+            <div class="input-section">
+                <h3>RDS Cost Control</h3>
+                <label for="rdsCost">Enter RDS Cost:</label>
+                <input type="number" id="rdsCost" step="0.01" placeholder="Enter RDS cost">
+                <button onclick="addCost('rds')">Add RDS Cost</button>
+                <h3>Total Cost: $<span id="rdsTotalCost">0.00</span></h3>
+            </div>
+
+            <!-- Storage Section -->
+            <div class="input-section">
+                <h3>Storage Cost Control</h3>
+                <label for="storageCost">Enter Storage Cost:</label>
+                <input type="number" id="storageCost" step="0.01" placeholder="Enter Storage cost">
+                <button onclick="addCost('storage')">Add Storage Cost</button>
+                <h3>Total Cost: $<span id="storageTotalCost">0.00</span></h3>
+            </div>
+
+            <!-- VPC Section -->
+            <div class="input-section">
+                <h3>VPC Cost Control</h3>
+                <label for="vpcCost">Enter VPC Cost:</label>
+                <input type="number" id="vpcCost" step="0.01" placeholder="Enter VPC cost">
+                <button onclick="addCost('vpc')">Add VPC Cost</button>
+                <h3>Total Cost: $<span id="vpcTotalCost">0.00</span></h3>
+            </div>
+
+            <!-- Lambda Section -->
+            <div class="input-section">
+                <h3>Lambda Cost Control</h3>
+                <label for="lambdaCost">Enter Lambda Cost:</label>
+                <input type="number" id="lambdaCost" step="0.01" placeholder="Enter Lambda cost">
+                <button onclick="addCost('lambda')">Add Lambda Cost</button>
+                <h3>Total Cost: $<span id="lambdaTotalCost">0.00</span></h3>
+            </div>
+
+            <!-- S3 Section -->
+            <div class="input-section">
+                <h3>S3 Cost Control</h3>
+                <label for="s3Cost">Enter S3 Cost:</label>
+                <input type="number" id="s3Cost" step="0.01" placeholder="Enter S3 cost">
+                <button onclick="addCost('s3')">Add S3 Cost</button>
+                <h3>Total Cost: $<span id="s3TotalCost">0.00</span></h3>
+            </div>
+        </div>
+
+        <button onclick="generatePDF()">Generate PDF Report</button>
+    </div>
+
+</body>
+</html>
