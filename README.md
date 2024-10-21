@@ -33,3 +33,4 @@ The **Cloud Cost Calculator** is a web-based application designed to help users 
    cd cloud-cost-calculator
    git init
 
+test build ok 
